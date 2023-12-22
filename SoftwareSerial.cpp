@@ -36,7 +36,9 @@ extern "C" {
 SoftwareSerial *ObjList[MAX_PIN + 1];
 
 void IRAM_ATTR sws_isr_0() { ObjList[0]->rxRead(); };
+void IRAM_ATTR sws_isr_1() { ObjList[1]->rxRead(); };
 void IRAM_ATTR sws_isr_2() { ObjList[2]->rxRead(); };
+void IRAM_ATTR sws_isr_3() { ObjList[3]->rxRead(); };
 void IRAM_ATTR sws_isr_4() { ObjList[4]->rxRead(); };
 void IRAM_ATTR sws_isr_5() { ObjList[5]->rxRead(); };
 void IRAM_ATTR sws_isr_12() { ObjList[12]->rxRead(); };
@@ -47,12 +49,18 @@ void IRAM_ATTR sws_isr_16() { ObjList[16]->rxRead(); };
 void IRAM_ATTR sws_isr_17() { ObjList[17]->rxRead(); };
 void IRAM_ATTR sws_isr_18() { ObjList[18]->rxRead(); };
 void IRAM_ATTR sws_isr_19() { ObjList[19]->rxRead(); };
+void IRAM_ATTR sws_isr_20() { ObjList[20]->rxRead(); };
 void IRAM_ATTR sws_isr_21() { ObjList[21]->rxRead(); };
 void IRAM_ATTR sws_isr_22() { ObjList[22]->rxRead(); };
 void IRAM_ATTR sws_isr_23() { ObjList[23]->rxRead(); };
+void IRAM_ATTR sws_isr_24() { ObjList[24]->rxRead(); };
 void IRAM_ATTR sws_isr_25() { ObjList[25]->rxRead(); };
 void IRAM_ATTR sws_isr_26() { ObjList[26]->rxRead(); };
 void IRAM_ATTR sws_isr_27() { ObjList[27]->rxRead(); };
+void IRAM_ATTR sws_isr_28() { ObjList[28]->rxRead(); };
+void IRAM_ATTR sws_isr_29() { ObjList[29]->rxRead(); };
+void IRAM_ATTR sws_isr_30() { ObjList[30]->rxRead(); };
+void IRAM_ATTR sws_isr_31() { ObjList[31]->rxRead(); };
 void IRAM_ATTR sws_isr_32() { ObjList[32]->rxRead(); };
 void IRAM_ATTR sws_isr_33() { ObjList[33]->rxRead(); };
 void IRAM_ATTR sws_isr_34() { ObjList[34]->rxRead(); };
@@ -60,9 +68,9 @@ void IRAM_ATTR sws_isr_35() { ObjList[35]->rxRead(); };
 
 static void (*ISRList[MAX_PIN + 1])() = {
     sws_isr_0,
-    NULL,
+    sws_isr_1,
     sws_isr_2,
-    NULL,
+    sws_isr_3,
     sws_isr_4,
     sws_isr_5,
     NULL,
@@ -79,22 +87,23 @@ static void (*ISRList[MAX_PIN + 1])() = {
     sws_isr_17,
     sws_isr_18,
     sws_isr_19,
-    NULL,
+    sws_isr_20,
     sws_isr_21,
     sws_isr_22,
     sws_isr_23,
-    NULL,
+    sws_isr_24,
     sws_isr_25,
     sws_isr_26,
     sws_isr_27,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
+    sws_isr_28,
+    sws_isr_29,
+    sws_isr_30,
+    sws_isr_31,
     sws_isr_32,
     sws_isr_33,
     sws_isr_34,
-    sws_isr_35};
+    sws_isr_35
+};
 
 bool SoftwareSerial::isValidGPIOpin(uint8_t pin)
 {
@@ -105,17 +114,15 @@ bool SoftwareSerial::isValidGPIOpin(uint8_t pin)
   return false;
 }
 
-SoftwareSerial::SoftwareSerial(int receivePin, int transmitPin, bool inverse_logic, unsigned int buffSize)
-{
-  m_invert = inverse_logic;
+SoftwareSerial::SoftwareSerial(int receivePin, int transmitPin, bool inverse_logic, unsigned int buffSize){
+  
   m_rxValid = m_txValid = m_txEnabled = m_rxEnabled = false;
   m_buffer = NULL;
+  m_invert = inverse_logic; 
   m_overflow = false;
-  if (isValidGPIOpin(receivePin))
-  {
+  if (isValidGPIOpin(receivePin)){
     m_buffer = (uint8_t *)malloc(buffSize);
-    if (m_buffer != NULL)
-    {
+    if (m_buffer != NULL){
       m_buffSize = buffSize;
       m_inPos = m_outPos = 0;
 
@@ -134,8 +141,7 @@ SoftwareSerial::SoftwareSerial(int receivePin, int transmitPin, bool inverse_log
   }
 }
 
-SoftwareSerial::~SoftwareSerial()
-{
+SoftwareSerial::~SoftwareSerial(){
   enableRx(false);
   if (m_rxValid)
     ObjList[m_rxPin] = NULL;
@@ -309,9 +315,6 @@ bool SoftwareSerial::overflow()
 
 int SoftwareSerial::peek()
 {
-  if (!m_rxValid || (m_inPos == m_outPos))
-  {
-    return -1;
-  }
+  if (!m_rxValid || (m_inPos == m_outPos)) return -1;
   return m_buffer[m_outPos];
 }
